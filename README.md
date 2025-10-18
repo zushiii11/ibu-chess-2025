@@ -1,9 +1,9 @@
-# IBU Chess — Milestone 1 DELUXE (Static SPA)
+# IBU Chess â€” Milestone 1 DELUXE (Static SPA)
 
 This is an upgraded UI version of Milestone 1: **separate views, single-page routing, responsive Bootstrap 5 + Bootstrap Icons, glassmorphism cards, accent glows**, and a polished dark theme.
 
 ## Run (M1 static)
-Open rontend/index.html in your browser. Navigation is SPA-style via the hash router.
+Open frontend/index.html in your browser. Navigation is SPA-style via the hash router.
 
 ## Views
 - Dashboard (hero, stats)
