@@ -1,22 +1,22 @@
-﻿# IBU Chess — Milestone 1 DELUXE (Static SPA)
+# IBU Chess - Milestone 1 (Static SPA)
 
-This is an upgraded UI version of Milestone 1: **separate views, single-page routing, responsive Bootstrap 5 + Bootstrap Icons, glassmorphism cards, accent glows**, and a polished dark theme.
+This milestone sets up the project skeleton and a static single-page prototype so we can present the planned flows before hooking it to a backend.
 
-## Run (M1 static)
-Open `frontend/index.html` in your browser. Navigation is SPA-style via the hash router.
+## Run
+Open `frontend/index.html` in a browser. The hash-based router swaps views without reloading the page.
 
 ## Views
-- Dashboard (hero, stats)
+- Dashboard (hero section and quick stats)
 - Games list
-- Game detail (board + moves)
+- Game detail (board preview and move list)
 - Tournaments
 - Profile
-- Admin (static)
-- Auth (Login, Register)
-- Reviews (optional)
+- Admin (placeholder)
+- Auth (Login and Register)
+- Reviews (optional screen for feedback)
 
 ## Structure
-See folders under `frontend/` and `backend/` (placeholders for later milestones).
+Folders under `frontend/` hold the HTML partials, styles, scripts, and assets. Matching placeholder directories live under `backend/` for future milestones.
 
 ## Draft ERD
-Image: `frontend/assets/erd.png` (same entities as base M1: users, games, moves, tournaments, tournament_participants, ratings, reviews).
+See `frontend/assets/erd.png` for the entity outline (users, games, moves, tournaments, tournament_participants, ratings, reviews).
