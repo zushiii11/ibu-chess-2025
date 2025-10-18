@@ -1,4 +1,4 @@
-// deluxe hash router (static stage)
+// Hash router for static prototype
 window.Router = (function(){
   const routes = {
     "": "dashboard",
