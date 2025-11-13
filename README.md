@@ -2,22 +2,21 @@
 
 A comprehensive chess management platform built as part of the IBU Web Engineering course. This project demonstrates modern web development practices with a complete RESTful API, database design, and interactive frontend.
 
-## 🎯 Project Milestones
 
-### ✅ Milestone 1: Static Frontend (Completed)
+### Milestone 1: Static Frontend (Completed)
 - Single Page Application (SPA) with hash-based routing
 - Responsive UI with Bootstrap 5 and glassmorphism design
 - Complete view structure for all features
 - Modern CSS with animations and effects
 
-### ✅ Milestone 2: Database & Backend API (Completed)
+### Milestone 2: Database & Backend API (Completed)
 - Normalized MySQL database schema
 - RESTful API with full CRUD operations
 - Custom PSR-4 autoloader
 - Data Access Object (DAO) pattern
 - Service layer architecture
 
-### ✅ Milestone 3: Enhanced Business Logic & OpenAPI Documentation (Completed)
+### Milestone 3: Enhanced Business Logic & OpenAPI Documentation (Completed)
 - FlightPHP framework integration
 - Comprehensive input validation
 - Business logic implementation for all entities
@@ -25,19 +24,7 @@ A comprehensive chess management platform built as part of the IBU Web Engineeri
 - Interactive Swagger UI documentation
 - Enhanced error handling
 
-### 🔜 Milestone 4: Authentication & Security (Upcoming)
-- JWT-based authentication
-- Role-based access control (RBAC)
-- Protected endpoints
-- Secure password handling
-
-### 🔜 Milestone 5: Deployment & Production (Upcoming)
-- Cloud deployment configuration
-- Production environment setup
-- Performance optimization
-- Monitoring and logging
-
-## 🚀 Tech Stack
+## Tech Stack
 
 ### Backend
 - **PHP 8.2+** - Modern PHP with strict typing
@@ -217,7 +204,7 @@ All list endpoints support:
 - `404 Not Found` - Resource not found
 - `500 Internal Server Error` - Server error
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 ibu-chess-2025/
@@ -266,7 +253,7 @@ ibu-chess-2025/
 └── README.md
 ```
 
-## 🎨 Database Schema
+## Database Schema
 
 ### Tables
 1. **users** - User accounts and profiles
@@ -283,7 +270,7 @@ ibu-chess-2025/
 - Tournament participants link users to tournaments
 - Reviews link users to games (optional)
 
-## 🔒 Validation Rules
+## Validation Rules
 
 ### User Validation
 - Username: 3-50 characters, alphanumeric with underscores/hyphens
@@ -314,7 +301,7 @@ ibu-chess-2025/
 - Rating: 1-5 stars, required
 - Comment: Max 5000 characters
 
-## 🧪 Testing the API
+## Testing the API
 
 ### Using cURL
 
@@ -347,43 +334,3 @@ curl "http://localhost:8000/api/users?role=player&limit=10&order_by=rating&order
 3. Click "Try it out"
 4. Fill in the parameters
 5. Click "Execute"
-
-## 🤝 Contributing
-
-This is an academic project for the IBU Web Engineering course. Contributions are welcome for educational purposes.
-
-## 📄 License
-
-MIT License - see LICENSE file for details
-
-## 👨‍💻 Developer
-
-- **Student**: IBU Chess Team
-- **Course**: Web Engineering
-- **Institution**: International Burch University
-- **Academic Year**: 2024/2025
-
-## 📞 Support
-
-For issues or questions:
-- Create an issue on GitHub
-- Email: support@ibuchess.com (project email)
-
-## 🔄 Version History
-
-- **v3.0.0** (Milestone 3) - FlightPHP integration, enhanced validation, OpenAPI documentation
-- **v2.0.0** (Milestone 2) - Backend API with database
-- **v1.0.0** (Milestone 1) - Static frontend SPA
-
-## 🎯 Next Steps
-
-1. ✅ Complete Milestone 3 (Current)
-2. 🔜 Implement JWT authentication (Milestone 4)
-3. 🔜 Deploy to production (Milestone 5)
-4. 🔜 Integrate frontend with backend API
-5. 🔜 Add real-time features (WebSockets)
-6. 🔜 Implement chess game engine
-
----
-
-**Note**: This project is actively developed as part of an academic course. Check the repository regularly for updates and new features!
