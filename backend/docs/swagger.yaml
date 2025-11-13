@@ -1,0 +1,1677 @@
+openapi: 3.0.3
+info:
+  title: IBU Chess API
+  description: |
+    A comprehensive chess management API for the IBU Chess platform.
+    This API provides full CRUD operations for managing users, tournaments, games, moves, participants, and reviews.
+    
+    ## Features
+    - User management with role-based access
+    - Tournament organization and tracking
+    - Game recording with move history
+    - Review system for games
+    - Tournament participant management
+    
+    ## Authentication
+    Authentication will be implemented in Milestone 4 using JWT tokens.
+    
+  version: 3.0.0
+  contact:
+    name: IBU Chess Team
+    email: support@ibuchess.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+  - url: https://api.ibuchess.com
+    description: Production server (coming soon)
+
+tags:
+  - name: Users
+    description: User management operations
+  - name: Tournaments
+    description: Tournament management operations
+  - name: Games
+    description: Chess game management operations
+  - name: Moves
+    description: Move tracking and management
+  - name: Tournament Participants
+    description: Tournament participant management
+  - name: Reviews
+    description: Game review and rating operations
+
+paths:
+  /:
+    get:
+      summary: API root endpoint
+      description: Returns basic API information and available resources
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  version:
+                    type: string
+                  documentation:
+                    type: string
+                  resources:
+                    type: array
+                    items:
+                      type: string
+
+  /api/users:
+    get:
+      tags:
+        - Users
+      summary: Get all users
+      description: Retrieve a list of all users with optional filtering
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of results to return
+          schema:
+            type: integer
+            minimum: 1
+        - name: offset
+          in: query
+          description: Number of results to skip
+          schema:
+            type: integer
+            minimum: 0
+        - name: order_by
+          in: query
+          description: Field to order by
+          schema:
+            type: string
+        - name: order_dir
+          in: query
+          description: Order direction
+          schema:
+            type: string
+            enum: [ASC, DESC]
+        - name: role
+          in: query
+          description: Filter by user role
+          schema:
+            type: string
+            enum: [player, coach, arbiter, admin]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    post:
+      tags:
+        - Users
+      summary: Create a new user
+      description: Register a new user in the system
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/users/{id}:
+    get:
+      tags:
+        - Users
+      summary: Get user by ID
+      description: Retrieve detailed information about a specific user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Users
+      summary: Update user
+      description: Update all fields of an existing user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags:
+        - Users
+      summary: Partially update user
+      description: Update specific fields of an existing user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Users
+      summary: Delete user
+      description: Remove a user from the system
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: User deleted successfully
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/tournaments:
+    get:
+      tags:
+        - Tournaments
+      summary: Get all tournaments
+      description: Retrieve a list of all tournaments with optional filtering
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+        - name: order_by
+          in: query
+          schema:
+            type: string
+        - name: order_dir
+          in: query
+          schema:
+            type: string
+            enum: [ASC, DESC]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tournament'
+    post:
+      tags:
+        - Tournaments
+      summary: Create a new tournament
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TournamentCreate'
+      responses:
+        '201':
+          description: Tournament created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tournament'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/tournaments/{id}:
+    get:
+      tags:
+        - Tournaments
+      summary: Get tournament by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tournament'
+        '404':
+          description: Tournament not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Tournaments
+      summary: Update tournament
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TournamentUpdate'
+      responses:
+        '200':
+          description: Tournament updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tournament'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Tournament not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags:
+        - Tournaments
+      summary: Partially update tournament
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TournamentUpdate'
+      responses:
+        '200':
+          description: Tournament updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tournament'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Tournament not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Tournaments
+      summary: Delete tournament
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Tournament deleted successfully
+        '404':
+          description: Tournament not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/tournaments/{id}/participants:
+    get:
+      tags:
+        - Tournaments
+      summary: Get tournament with participants
+      description: Retrieve tournament details along with all registered participants
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TournamentWithParticipants'
+        '404':
+          description: Tournament not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/games:
+    get:
+      tags:
+        - Games
+      summary: Get all games
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+        - name: tournament_id
+          in: query
+          description: Filter by tournament ID
+          schema:
+            type: integer
+        - name: result
+          in: query
+          description: Filter by game result
+          schema:
+            type: string
+            enum: [white, black, draw, in_progress]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Game'
+    post:
+      tags:
+        - Games
+      summary: Create a new game
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GameCreate'
+      responses:
+        '201':
+          description: Game created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/games/{id}:
+    get:
+      tags:
+        - Games
+      summary: Get game by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        '404':
+          description: Game not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Games
+      summary: Update game
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GameUpdate'
+      responses:
+        '200':
+          description: Game updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Game not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags:
+        - Games
+      summary: Partially update game
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GameUpdate'
+      responses:
+        '200':
+          description: Game updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Game not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Games
+      summary: Delete game
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Game deleted successfully
+        '404':
+          description: Game not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/games/{id}/details:
+    get:
+      tags:
+        - Games
+      summary: Get game with moves and player details
+      description: Retrieve complete game information including all moves and player information
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameDetails'
+        '404':
+          description: Game not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/moves:
+    get:
+      tags:
+        - Moves
+      summary: Get all moves
+      parameters:
+        - name: game_id
+          in: query
+          description: Filter by game ID
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Move'
+    post:
+      tags:
+        - Moves
+      summary: Create a new move
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoveCreate'
+      responses:
+        '201':
+          description: Move created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Move'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/moves/{id}:
+    get:
+      tags:
+        - Moves
+      summary: Get move by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Move'
+        '404':
+          description: Move not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Moves
+      summary: Update move
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoveUpdate'
+      responses:
+        '200':
+          description: Move updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Move'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Move not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags:
+        - Moves
+      summary: Partially update move
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoveUpdate'
+      responses:
+        '200':
+          description: Move updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Move'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Move not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Moves
+      summary: Delete move
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Move deleted successfully
+        '404':
+          description: Move not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/tournament-participants:
+    get:
+      tags:
+        - Tournament Participants
+      summary: Get all tournament participants
+      parameters:
+        - name: tournament_id
+          in: query
+          description: Filter by tournament ID
+          schema:
+            type: integer
+        - name: user_id
+          in: query
+          description: Filter by user ID
+          schema:
+            type: integer
+        - name: status
+          in: query
+          description: Filter by status
+          schema:
+            type: string
+            enum: [registered, checked_in, eliminated, winner]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TournamentParticipant'
+    post:
+      tags:
+        - Tournament Participants
+      summary: Register a participant in a tournament
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TournamentParticipantCreate'
+      responses:
+        '201':
+          description: Participant registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TournamentParticipant'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/tournament-participants/{id}:
+    get:
+      tags:
+        - Tournament Participants
+      summary: Get participant by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TournamentParticipant'
+        '404':
+          description: Participant not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Tournament Participants
+      summary: Update participant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TournamentParticipantUpdate'
+      responses:
+        '200':
+          description: Participant updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TournamentParticipant'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Participant not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags:
+        - Tournament Participants
+      summary: Partially update participant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TournamentParticipantUpdate'
+      responses:
+        '200':
+          description: Participant updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TournamentParticipant'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Participant not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Tournament Participants
+      summary: Remove participant from tournament
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Participant removed successfully
+        '404':
+          description: Participant not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/reviews:
+    get:
+      tags:
+        - Reviews
+      summary: Get all reviews
+      parameters:
+        - name: game_id
+          in: query
+          description: Filter by game ID
+          schema:
+            type: integer
+        - name: user_id
+          in: query
+          description: Filter by user ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Review'
+    post:
+      tags:
+        - Reviews
+      summary: Create a new review
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewCreate'
+      responses:
+        '201':
+          description: Review created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/reviews/{id}:
+    get:
+      tags:
+        - Reviews
+      summary: Get review by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '404':
+          description: Review not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Reviews
+      summary: Update review
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewUpdate'
+      responses:
+        '200':
+          description: Review updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Review not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags:
+        - Reviews
+      summary: Partially update review
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewUpdate'
+      responses:
+        '200':
+          description: Review updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Review not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Reviews
+      summary: Delete review
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Review deleted successfully
+        '404':
+          description: Review not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          minLength: 3
+          maxLength: 50
+        email:
+          type: string
+          format: email
+          maxLength: 120
+        role:
+          type: string
+          enum: [player, coach, arbiter, admin]
+          default: player
+        rating:
+          type: integer
+          minimum: 0
+          maximum: 3000
+          default: 1200
+        bio:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - id
+        - username
+        - email
+        - role
+        - rating
+
+    UserCreate:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 50
+          pattern: '^[a-zA-Z0-9_-]+$'
+        email:
+          type: string
+          format: email
+          maxLength: 120
+        password:
+          type: string
+          minLength: 6
+          maxLength: 255
+        role:
+          type: string
+          enum: [player, coach, arbiter, admin]
+        rating:
+          type: integer
+          minimum: 0
+          maximum: 3000
+        bio:
+          type: string
+      required:
+        - username
+        - email
+        - password
+
+    UserUpdate:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 50
+          pattern: '^[a-zA-Z0-9_-]+$'
+        email:
+          type: string
+          format: email
+          maxLength: 120
+        password:
+          type: string
+          minLength: 6
+          maxLength: 255
+        role:
+          type: string
+          enum: [player, coach, arbiter, admin]
+        rating:
+          type: integer
+          minimum: 0
+          maximum: 3000
+        bio:
+          type: string
+
+    Tournament:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          minLength: 3
+          maxLength: 120
+        location:
+          type: string
+          maxLength: 120
+          nullable: true
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        prize_pool:
+          type: number
+          format: decimal
+          minimum: 0
+          default: 0.00
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - id
+        - name
+        - prize_pool
+
+    TournamentCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 120
+        location:
+          type: string
+          maxLength: 120
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        description:
+          type: string
+        prize_pool:
+          type: number
+          format: decimal
+          minimum: 0
+      required:
+        - name
+
+    TournamentUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 120
+        location:
+          type: string
+          maxLength: 120
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        description:
+          type: string
+        prize_pool:
+          type: number
+          format: decimal
+          minimum: 0
+
+    TournamentWithParticipants:
+      allOf:
+        - $ref: '#/components/schemas/Tournament'
+        - type: object
+          properties:
+            participants:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  user_id:
+                    type: integer
+                  username:
+                    type: string
+                  email:
+                    type: string
+                  rating:
+                    type: integer
+                  seed:
+                    type: integer
+                  status:
+                    type: string
+                  registered_at:
+                    type: string
+                    format: date-time
+
+    Game:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        tournament_id:
+          type: integer
+          nullable: true
+        white_player_id:
+          type: integer
+        black_player_id:
+          type: integer
+        result:
+          type: string
+          enum: [white, black, draw, in_progress]
+          default: in_progress
+        pgn:
+          type: string
+          nullable: true
+        played_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - id
+        - white_player_id
+        - black_player_id
+        - result
+
+    GameCreate:
+      type: object
+      properties:
+        tournament_id:
+          type: integer
+        white_player_id:
+          type: integer
+        black_player_id:
+          type: integer
+        result:
+          type: string
+          enum: [white, black, draw, in_progress]
+        pgn:
+          type: string
+        played_at:
+          type: string
+          format: date-time
+      required:
+        - white_player_id
+        - black_player_id
+
+    GameUpdate:
+      type: object
+      properties:
+        tournament_id:
+          type: integer
+        white_player_id:
+          type: integer
+        black_player_id:
+          type: integer
+        result:
+          type: string
+          enum: [white, black, draw, in_progress]
+        pgn:
+          type: string
+        played_at:
+          type: string
+          format: date-time
+
+    GameDetails:
+      allOf:
+        - $ref: '#/components/schemas/Game'
+        - type: object
+          properties:
+            moves:
+              type: array
+              items:
+                $ref: '#/components/schemas/Move'
+            white_player:
+              type: object
+              properties:
+                id:
+                  type: integer
+                username:
+                  type: string
+                rating:
+                  type: integer
+            black_player:
+              type: object
+              properties:
+                id:
+                  type: integer
+                username:
+                  type: string
+                rating:
+                  type: integer
+
+    Move:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        game_id:
+          type: integer
+        move_number:
+          type: integer
+          minimum: 1
+        notation:
+          type: string
+          maxLength: 15
+        comment:
+          type: string
+          nullable: true
+        time_spent_seconds:
+          type: integer
+          minimum: 0
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - id
+        - game_id
+        - move_number
+        - notation
+
+    MoveCreate:
+      type: object
+      properties:
+        game_id:
+          type: integer
+        move_number:
+          type: integer
+          minimum: 1
+        notation:
+          type: string
+          maxLength: 15
+        comment:
+          type: string
+        time_spent_seconds:
+          type: integer
+          minimum: 0
+      required:
+        - game_id
+        - move_number
+        - notation
+
+    MoveUpdate:
+      type: object
+      properties:
+        game_id:
+          type: integer
+        move_number:
+          type: integer
+          minimum: 1
+        notation:
+          type: string
+          maxLength: 15
+        comment:
+          type: string
+        time_spent_seconds:
+          type: integer
+          minimum: 0
+
+    TournamentParticipant:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        tournament_id:
+          type: integer
+        user_id:
+          type: integer
+        seed:
+          type: integer
+          minimum: 1
+          nullable: true
+        status:
+          type: string
+          enum: [registered, checked_in, eliminated, winner]
+          default: registered
+        registered_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - id
+        - tournament_id
+        - user_id
+        - status
+
+    TournamentParticipantCreate:
+      type: object
+      properties:
+        tournament_id:
+          type: integer
+        user_id:
+          type: integer
+        seed:
+          type: integer
+          minimum: 1
+        status:
+          type: string
+          enum: [registered, checked_in, eliminated, winner]
+      required:
+        - tournament_id
+        - user_id
+
+    TournamentParticipantUpdate:
+      type: object
+      properties:
+        tournament_id:
+          type: integer
+        user_id:
+          type: integer
+        seed:
+          type: integer
+          minimum: 1
+        status:
+          type: string
+          enum: [registered, checked_in, eliminated, winner]
+
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user_id:
+          type: integer
+        game_id:
+          type: integer
+          nullable: true
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - id
+        - user_id
+        - rating
+
+    ReviewCreate:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        game_id:
+          type: integer
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+          maxLength: 5000
+      required:
+        - user_id
+        - rating
+
+    ReviewUpdate:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        game_id:
+          type: integer
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+          maxLength: 5000
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+      required:
+        - error
