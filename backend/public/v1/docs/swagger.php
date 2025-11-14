@@ -1,0 +1,22 @@
+<?php
+
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
+require __DIR__ . '/../../../../vendor/autoload.php';
+
+// Define base URL based on environment
+if ($_SERVER['SERVER_NAME'] == 'localhost' || $_SERVER['SERVER_NAME'] == '127.0.0.1') {
+    define('BASE_URL', 'http://localhost:8000');
+} else {
+    define('BASE_URL', 'https://your-production-server.com');
+}
+
+// Scan for annotations in doc_setup.php and routes folder
+$openapi = \OpenApi\Generator::scan([
+    __DIR__ . '/doc_setup.php',
+    __DIR__ . '/../../../rest/routes'
+]);
+
+header('Content-Type: application/json');
+echo $openapi->toJson();
