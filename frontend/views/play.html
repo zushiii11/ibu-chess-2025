@@ -1,0 +1,128 @@
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="hero">
+            <div class="shine"></div>
+            <div class="text-center">
+                <div class="icon-chip mb-3 d-inline-flex"><i class="bi bi-joystick"></i> Choose Your Game Mode</div>
+                <h1 class="display-5 fw-semibold mb-2">Ready to Play Chess?</h1>
+                <p class="text-secondary">Select a game mode below to start your chess journey</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 stagger-animation">
+    <div class="col-md-4">
+        <div class="game-mode-card" onclick="window.location.hash='#/play/ai'">
+            <div class="icon text-primary">
+                <i class="bi bi-cpu"></i>
+            </div>
+            <h3 class="h5 mb-2 fw-semibold">Play vs AI</h3>
+            <p class="text-secondary mb-3">Challenge our chess engine with multiple difficulty levels</p>
+            <div class="d-flex flex-wrap gap-2 justify-content-center mb-3">
+                <span class="badge bg-success-subtle text-success">Easy</span>
+                <span class="badge bg-warning-subtle text-warning">Medium</span>
+                <span class="badge bg-danger-subtle text-danger">Hard</span>
+            </div>
+            <a href="#/play/ai" class="btn btn-primary btn-sm glow"><i class="bi bi-play-fill"></i> Start Game</a>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="game-mode-card" onclick="window.location.hash='#/play/human'">
+            <div class="icon text-info">
+                <i class="bi bi-people"></i>
+            </div>
+            <h3 class="h5 mb-2 fw-semibold">Play vs Human</h3>
+            <p class="text-secondary mb-3">Find a random opponent and play a quick match</p>
+            <div class="d-flex flex-wrap gap-2 justify-content-center mb-3">
+                <span class="badge bg-primary-subtle text-primary">Quick Match</span>
+                <span class="badge bg-info-subtle text-info">Ranked</span>
+            </div>
+            <a href="#/play/human" class="btn btn-info btn-sm glow"><i class="bi bi-lightning-fill"></i> Quick Match</a>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="game-mode-card" onclick="window.location.hash='#/challenge'">
+            <div class="icon text-warning">
+                <i class="bi bi-trophy"></i>
+            </div>
+            <h3 class="h5 mb-2 fw-semibold">Challenge Player</h3>
+            <p class="text-secondary mb-3">Send a challenge to a specific player</p>
+            <div class="d-flex flex-wrap gap-2 justify-content-center mb-3">
+                <span class="badge bg-warning-subtle text-warning">Custom</span>
+                <span class="badge bg-secondary-subtle text-secondary">Friends</span>
+            </div>
+            <a href="#/challenge" class="btn btn-warning btn-sm glow"><i class="bi bi-send-fill"></i> Send Challenge</a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-4">
+    <div class="col-md-6">
+        <div class="card-soft p-4">
+            <h4 class="h6 mb-3"><i class="bi bi-clock-history"></i> Recent Games</h4>
+            <div class="text-secondary small" id="recent-games-list">
+                <p>Loading your recent games...</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card-soft p-4">
+            <h4 class="h6 mb-3"><i class="bi bi-graph-up"></i> Your Stats</h4>
+            <div class="d-flex flex-column gap-2">
+                <div class="d-flex justify-content-between">
+                    <span class="text-secondary">Games Played:</span>
+                    <span class="fw-semibold" id="stats-games">-</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-secondary">Win Rate:</span>
+                    <span class="fw-semibold text-success" id="stats-winrate">-</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-secondary">Current Rating:</span>
+                    <span class="fw-semibold text-primary" id="stats-rating">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (async function () {
+        try {
+            const user = await API.auth.getCurrentUser();
+            if (user) {
+                // Load stats
+                document.getElementById('stats-rating').textContent = user.rating || '1500';
+
+                // Load recent games
+                try {
+                    const games = await API.games.getAll({ limit: 5 });
+                    const recentGamesList = document.getElementById('recent-games-list');
+                    if (games && games.length > 0) {
+                        recentGamesList.innerHTML = games.slice(0, 3).map(game => `
+            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-secondary">
+              <span>Game #${game.id}</span>
+              <span class="badge bg-primary-subtle text-primary">${game.result || 'In Progress'}</span>
+            </div>
+          `).join('');
+                    } else {
+                        recentGamesList.innerHTML = '<p class="text-secondary small">No recent games found. Start playing!</p>';
+                    }
+
+                    // Calculate stats
+                    document.getElementById('stats-games').textContent = games.length || '0';
+                    const wins = games.filter(g => g.result === '1-0' || g.result === '0-1').length;
+                    const winRate = games.length > 0 ? Math.round((wins / games.length) * 100) : 0;
+                    document.getElementById('stats-winrate').textContent = winRate + '%';
+                } catch (e) {
+                    console.error('Error loading games:', e);
+                }
+            }
+        } catch (error) {
+            console.error('Error loading play page:', error);
+        }
+    })();
+</script>

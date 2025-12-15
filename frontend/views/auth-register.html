@@ -9,30 +9,38 @@
   <div class="col-lg-6 order-lg-1">
     <div class="card-soft p-4">
       <h2 class="h5 mb-3"><i class="bi bi-person-plus"></i> Register</h2>
-      <form>
+      <div id="register-error" class="alert alert-danger" style="display: none;"></div>
+      <form id="register-form">
         <div class="row g-3">
           <div class="col-md-6">
             <label class="form-label">Username</label>
-            <input class="form-control" type="text" placeholder="student123" required>
+            <input class="form-control" type="text" name="username" placeholder="student123" required>
           </div>
           <div class="col-md-6">
             <label class="form-label">Email</label>
-            <input class="form-control" type="email" placeholder="you@ibu.edu.ba" required>
+            <input class="form-control" type="email" name="email" placeholder="you@ibu.edu.ba" required>
           </div>
         </div>
         <div class="row g-3 mt-1">
           <div class="col-md-6">
             <label class="form-label">Password</label>
-            <input class="form-control" type="password" required>
+            <input class="form-control" type="password" name="password" required minlength="6">
           </div>
           <div class="col-md-6">
             <label class="form-label">Confirm Password</label>
-            <input class="form-control" type="password" required>
+            <input class="form-control" type="password" name="confirmPassword" required minlength="6">
           </div>
         </div>
-        <button class="btn btn-success w-100 mt-3 glow" type="button" disabled>Create account (static)</button>
+        <button class="btn btn-success w-100 mt-3 glow" type="submit">Create account</button>
       </form>
-      <div class="text-secondary small mt-3">Real registration will be enabled in Milestone 4.</div>
+      <div class="text-secondary small mt-3">
+        Already have an account? <a href="#/auth/login">Login here</a>
+      </div>
     </div>
   </div>
 </div>
+<script>
+  if (window.AuthHandler) {
+    window.AuthHandler.initRegister();
+  }
+</script>

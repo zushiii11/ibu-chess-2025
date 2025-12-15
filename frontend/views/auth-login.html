@@ -9,18 +9,26 @@
   <div class="col-lg-6">
     <div class="card-soft p-4">
       <h2 class="h5 mb-3"><i class="bi bi-box-arrow-in-right"></i> Login</h2>
-      <form>
+      <div id="login-error" class="alert alert-danger" style="display: none;"></div>
+      <form id="login-form">
         <div class="mb-3">
-          <label class="form-label">Email</label>
-          <input class="form-control" type="email" placeholder="you@ibu.edu.ba" required>
+          <label class="form-label">Username</label>
+          <input class="form-control" type="text" name="username" placeholder="your_username" required>
         </div>
         <div class="mb-3">
           <label class="form-label">Password</label>
-          <input class="form-control" type="password" placeholder="••••••••" required>
+          <input class="form-control" type="password" name="password" placeholder="••••••••" required>
         </div>
-        <button class="btn btn-primary w-100 glow" type="button" disabled>Login (static)</button>
+        <button class="btn btn-primary w-100 glow" type="submit">Login</button>
       </form>
-      <div class="text-secondary small mt-3">Milestone 4 will wire this up with JWT.</div>
+      <div class="text-secondary small mt-3">
+        Don't have an account? <a href="#/auth/register">Register here</a>
+      </div>
     </div>
   </div>
 </div>
+<script>
+  if (window.AuthHandler) {
+    window.AuthHandler.initLogin();
+  }
+</script>

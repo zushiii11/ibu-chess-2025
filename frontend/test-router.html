@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Router Test</title>
+</head>
+<body>
+  <h1>Router Test</h1>
+  <div id="app">Loading...</div>
+  <script src="./js/router.js"></script>
+  <script src="./js/spa.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM loaded');
+      console.log('Router:', window.Router);
+      console.log('IBUChess:', window.IBUChess);
+      if (window.IBUChess && window.IBUChess.init) {
+        window.IBUChess.init();
+      }
+    });
+  </script>
+</body>
+</html>
+

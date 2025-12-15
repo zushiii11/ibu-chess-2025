@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Debug Console</title>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #0f0; }
+    .error { color: #f00; }
+    .success { color: #0f0; }
+    .info { color: #0ff; }
+  </style>
+</head>
+<body>
+  <h1>IBU Chess - Debug Console</h1>
+  <div id="debug"></div>
+  
+  <script>
+    const debug = document.getElementById('debug');
+    function log(msg, type = 'info') {
+      const div = document.createElement('div');
+      div.className = type;
+      div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      debug.appendChild(div);
+      console.log(msg);
+    }
+    
+    log('Starting debug...', 'info');
+    
+    // Test Router
+    log('Loading router.js...', 'info');
+    const routerScript = document.createElement('script');
+    routerScript.src = './js/router.js';
+    routerScript.onload = () => {
+      log('✅ router.js loaded', 'success');
+      log('Router object: ' + (window.Router ? 'EXISTS' : 'MISSING'), window.Router ? 'success' : 'error');
+      
+      // Test SPA
+      log('Loading spa.js...', 'info');
+      const spaScript = document.createElement('script');
+      spaScript.src = './js/spa.js';
+      spaScript.onload = () => {
+        log('✅ spa.js loaded', 'success');
+        log('IBUChess object: ' + (window.IBUChess ? 'EXISTS' : 'MISSING'), window.IBUChess ? 'success' : 'error');
+        
+        // Test API
+        log('Loading api.js...', 'info');
+        const apiScript = document.createElement('script');
+        apiScript.src = './js/api.js';
+        apiScript.onload = () => {
+          log('✅ api.js loaded', 'success');
+          log('API object: ' + (window.API ? 'EXISTS' : 'MISSING'), window.API ? 'success' : 'error');
+          
+          // Test initialization
+          setTimeout(() => {
+            log('Testing initialization...', 'info');
+            if (window.IBUChess && window.IBUChess.init) {
+              try {
+                window.IBUChess.init();
+                log('✅ IBUChess.init() called successfully', 'success');
+              } catch (e) {
+                log('❌ Error in IBUChess.init(): ' + e.message, 'error');
+              }
+            } else {
+              log('❌ IBUChess.init() not available', 'error');
+            }
+            
+            // Test hash navigation
+            log('Testing hash navigation...', 'info');
+            window.location.hash = '#/dashboard';
+            setTimeout(() => {
+              const app = document.getElementById('app');
+              if (app && app.innerHTML.trim()) {
+                log('✅ Router is working! App content loaded.', 'success');
+              } else {
+                log('❌ Router not working. App element empty.', 'error');
+              }
+            }, 500);
+          }, 100);
+        };
+        apiScript.onerror = () => log('❌ Failed to load api.js', 'error');
+        document.head.appendChild(apiScript);
+      };
+      spaScript.onerror = () => log('❌ Failed to load spa.js', 'error');
+      document.head.appendChild(spaScript);
+    };
+    routerScript.onerror = () => log('❌ Failed to load router.js', 'error');
+    document.head.appendChild(routerScript);
+  </script>
+  
+  <div id="app" style="margin-top: 20px; padding: 20px; border: 1px solid #0f0; min-height: 100px;">
+    App content will appear here...
+  </div>
+</body>
+</html>
+

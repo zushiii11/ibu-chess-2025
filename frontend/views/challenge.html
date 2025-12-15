@@ -1,0 +1,246 @@
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card-soft p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="h4 mb-1"><i class="bi bi-trophy"></i> Challenge a Player</h2>
+                    <p class="text-secondary small mb-0">Send a challenge to a specific player</p>
+                </div>
+                <a href="#/play" class="btn btn-outline-light btn-sm"><i class="bi bi-arrow-left"></i> Back</a>
+            </div>
+
+            <!-- Search for Players -->
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Search for a player:</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-secondary">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" class="form-control bg-transparent border-secondary text-light"
+                        id="player-search" placeholder="Enter username...">
+                    <button class="btn btn-primary" id="search-btn">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search Results -->
+            <div id="search-results" class="mb-4" style="display: none;">
+                <h5 class="h6 mb-3">Search Results:</h5>
+                <div id="results-list"></div>
+            </div>
+
+            <!-- Challenge Settings -->
+            <div id="challenge-settings" style="display: none;">
+                <h5 class="h6 mb-3">Challenge Settings:</h5>
+                <div class="card-soft p-3 mb-3">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <img src="./assets/avatar.png" width="48" height="48" class="rounded-circle" alt="avatar">
+                        <div>
+                            <div class="fw-semibold" id="challenge-player-name">-</div>
+                            <div class="text-secondary small">Rating: <span id="challenge-player-rating">-</span></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Time Control:</label>
+                        <select class="form-select bg-transparent border-secondary text-light" id="challenge-time">
+                            <option value="bullet">Bullet (1 min)</option>
+                            <option value="blitz" selected>Blitz (3 min)</option>
+                            <option value="rapid">Rapid (10 min)</option>
+                            <option value="classical">Classical (30 min)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Your Color:</label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="color" id="white" value="white" checked>
+                            <label class="btn btn-outline-light" for="white"><i class="bi bi-circle"></i> White</label>
+
+                            <input type="radio" class="btn-check" name="color" id="random" value="random">
+                            <label class="btn btn-outline-secondary" for="random"><i class="bi bi-shuffle"></i>
+                                Random</label>
+
+                            <input type="radio" class="btn-check" name="color" id="black" value="black">
+                            <label class="btn btn-outline-dark" for="black"><i class="bi bi-circle-fill"></i>
+                                Black</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Add a message (optional):</label>
+                        <textarea class="form-control bg-transparent border-secondary text-light" id="challenge-message"
+                            rows="2" placeholder="Good luck!"></textarea>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary glow flex-grow-1" id="send-challenge-btn">
+                            <i class="bi bi-send-fill"></i> Send Challenge
+                        </button>
+                        <button class="btn btn-outline-secondary" id="cancel-challenge-btn">
+                            <i class="bi bi-x"></i> Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card-soft p-4 mb-3">
+            <h4 class="h6 mb-3"><i class="bi bi-inbox"></i> Pending Challenges</h4>
+            <div id="pending-challenges">
+                <p class="text-secondary small">No pending challenges</p>
+            </div>
+        </div>
+
+        <div class="card-soft p-4">
+            <h4 class="h6 mb-3"><i class="bi bi-people"></i> Suggested Players</h4>
+            <div class="d-flex flex-column gap-2" id="suggested-players">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const searchInput = document.getElementById('player-search');
+        const searchBtn = document.getElementById('search-btn');
+        const searchResults = document.getElementById('search-results');
+        const resultsList = document.getElementById('results-list');
+        const challengeSettings = document.getElementById('challenge-settings');
+        const sendChallengeBtn = document.getElementById('send-challenge-btn');
+        const cancelChallengeBtn = document.getElementById('cancel-challenge-btn');
+        const suggestedPlayers = document.getElementById('suggested-players');
+        const pendingChallenges = document.getElementById('pending-challenges');
+
+        let selectedPlayer = null;
+
+        // Sample player data
+        const samplePlayers = [
+            { username: 'ChessMaster99', rating: 1650, online: true },
+            { username: 'KnightRider', rating: 1520, online: true },
+            { username: 'PawnStorm', rating: 1480, online: false },
+            { username: 'RookiePlayer', rating: 1390, online: true },
+            { username: 'QueenGambit', rating: 1720, online: true },
+            { username: 'BishopBlitz', rating: 1560, online: false }
+        ];
+
+        function searchPlayers() {
+            const query = searchInput.value.trim().toLowerCase();
+            if (!query) {
+                searchResults.style.display = 'none';
+                return;
+            }
+
+            const matches = samplePlayers.filter(p =>
+                p.username.toLowerCase().includes(query)
+            );
+
+            if (matches.length === 0) {
+                resultsList.innerHTML = '<p class="text-secondary small">No players found</p>';
+            } else {
+                resultsList.innerHTML = matches.map(player => `
+        <div class="card-soft p-3 mb-2 cursor-pointer" onclick="selectPlayer('${player.username}', ${player.rating})">
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+              <img src="./assets/avatar.png" width="32" height="32" class="rounded-circle" alt="avatar">
+              <div>
+                <div class="fw-semibold">${player.username}</div>
+                <div class="text-secondary small">Rating: ${player.rating}</div>
+              </div>
+            </div>
+            <div>
+              ${player.online ?
+                        '<span class="badge bg-success-subtle text-success"><i class="bi bi-circle-fill"></i> Online</span>' :
+                        '<span class="badge bg-secondary-subtle text-secondary">Offline</span>'
+                    }
+            </div>
+          </div>
+        </div>
+      `).join('');
+            }
+
+            searchResults.style.display = 'block';
+        }
+
+        window.selectPlayer = function (username, rating) {
+            selectedPlayer = { username, rating };
+            document.getElementById('challenge-player-name').textContent = username;
+            document.getElementById('challenge-player-rating').textContent = rating;
+            challengeSettings.style.display = 'block';
+            searchResults.style.display = 'none';
+            searchInput.value = '';
+        };
+
+        searchBtn.addEventListener('click', searchPlayers);
+        searchInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                searchPlayers();
+            }
+        });
+
+        sendChallengeBtn.addEventListener('click', function () {
+            if (!selectedPlayer) return;
+
+            const timeControl = document.getElementById('challenge-time').value;
+            const color = document.querySelector('input[name="color"]:checked').value;
+            const message = document.getElementById('challenge-message').value;
+
+            // Add to pending challenges
+            const challengeDiv = document.createElement('div');
+            challengeDiv.className = 'card-soft p-2 mb-2';
+            challengeDiv.innerHTML = `
+      <div class="small">
+        <div class="fw-semibold">${selectedPlayer.username}</div>
+        <div class="text-secondary">${timeControl} • ${color}</div>
+        <div class="d-flex gap-1 mt-2">
+          <button class="btn btn-sm btn-outline-danger flex-grow-1" onclick="this.closest('.card-soft').remove()">
+            <i class="bi bi-x"></i> Cancel
+          </button>
+        </div>
+      </div>
+    `;
+
+            if (pendingChallenges.querySelector('p')) {
+                pendingChallenges.innerHTML = '';
+            }
+            pendingChallenges.appendChild(challengeDiv);
+
+            // Show success message
+            alert(`Challenge sent to ${selectedPlayer.username}!`);
+
+            // Reset form
+            challengeSettings.style.display = 'none';
+            selectedPlayer = null;
+        });
+
+        cancelChallengeBtn.addEventListener('click', function () {
+            challengeSettings.style.display = 'none';
+            selectedPlayer = null;
+        });
+
+        // Populate suggested players
+        function loadSuggestedPlayers() {
+            const online = samplePlayers.filter(p => p.online).slice(0, 4);
+            suggestedPlayers.innerHTML = online.map(player => `
+      <div class="d-flex align-items-center justify-content-between p-2 border-bottom border-secondary">
+        <div class="d-flex align-items-center gap-2">
+          <img src="./assets/avatar.png" width="24" height="24" class="rounded-circle" alt="avatar">
+          <div class="small">
+            <div class="fw-semibold">${player.username}</div>
+            <div class="text-secondary" style="font-size: 0.75rem;">${player.rating}</div>
+          </div>
+        </div>
+        <button class="btn btn-sm btn-outline-primary" onclick="selectPlayer('${player.username}', ${player.rating})">
+          <i class="bi bi-send"></i>
+        </button>
+      </div>
+    `).join('');
+        }
+
+        loadSuggestedPlayers();
+    })();
+</script>

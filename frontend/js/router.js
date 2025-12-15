@@ -1,5 +1,5 @@
 // Hash router for static prototype
-window.Router = (function(){
+window.Router = (function () {
   const routes = {
     "": "dashboard",
     "dashboard": "dashboard",
@@ -8,20 +8,46 @@ window.Router = (function(){
     "tournaments": "tournaments",
     "profile": "profile",
     "admin": "admin",
-    "auth/login":"auth-login",
-    "auth/register":"auth-register",
-    "reviews":"reviews"
+    "auth/login": "auth-login",
+    "auth/register": "auth-register",
+    "reviews": "reviews",
+    "play": "play",
+    "play/ai": "play-ai",
+    "play/human": "play-human",
+    "challenge": "challenge"
   };
-  async function load(route, params){
-    const viewFile = routes[route] || "dashboard";
+  async function load(route, params) {
+    // Handle nested routes like "auth/login"
+    let viewFile = routes[route];
+
+    // If route not found, try to find it as nested route
+    if (!viewFile && route.includes('/')) {
+      viewFile = routes[route];
+    }
+
+    // Default to dashboard if route not found
+    if (!viewFile) {
+      viewFile = "dashboard";
+    }
+
     const path = `./views/${viewFile}.html`;
-    const res = await fetch(path, {cache: "no-cache"});
-    return await res.text();
+    try {
+      const res = await fetch(path, { cache: "no-cache" });
+      if (!res.ok) {
+        throw new Error(`Failed to load ${path}: ${res.status}`);
+      }
+      return await res.text();
+    } catch (error) {
+      console.error('Error loading view:', error);
+      return `<div class="alert alert-danger">Error loading page: ${error.message}</div>`;
+    }
   }
-  function parseHash(){
+  function parseHash() {
     const hash = (location.hash || "#/dashboard").slice(2);
-    const [route, ...rest] = hash.split("/");
-    return { route, params: rest };
+    const parts = hash.split("/");
+    const route = parts.join("/"); // Keep full path for nested routes like "auth/login"
+    const params = parts.slice(1); // Everything after first part
+    return { route, params };
   }
   return { load, parseHash };
 })();

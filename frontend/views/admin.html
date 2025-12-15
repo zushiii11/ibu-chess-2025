@@ -1,20 +1,160 @@
 <div class="card-soft p-4">
-  <h2 class="h5 mb-3"><i class="bi bi-sliders2"></i> Admin Panel (static)</h2>
-  <p class="text-secondary">Role-based access appears here in Milestone 4.</p>
-  <div class="row g-3">
+  <h2 class="h5 mb-3"><i class="bi bi-sliders2"></i> Admin Panel</h2>
+  <p class="text-secondary mb-4">Manage users, tournaments, games, and more.</p>
+  
+  <div id="admin-error" class="alert alert-danger" style="display: none;"></div>
+  
+  <div class="row g-3 mb-4">
     <div class="col-md-6">
       <div class="card card-soft p-3 h-100">
-        <h5 class="card-title"><i class="bi bi-people"></i> Users</h5>
-        <p class="text-secondary">Create, update, delete users.</p>
-        <a class="btn btn-outline-secondary btn-sm disabled" href="#">Open</a>
+        <h5 class="card-title"><i class="bi bi-people"></i> Users Management</h5>
+        <p class="text-secondary">Total users: <span id="user-count">-</span></p>
+        <button class="btn btn-outline-primary btn-sm" onclick="loadUsers()">Manage Users</button>
       </div>
     </div>
     <div class="col-md-6">
       <div class="card card-soft p-3 h-100">
         <h5 class="card-title"><i class="bi bi-diagram-3"></i> Tournaments</h5>
-        <p class="text-secondary">Create tournaments, seed players.</p>
-        <a class="btn btn-outline-secondary btn-sm disabled" href="#">Open</a>
+        <p class="text-secondary">Total tournaments: <span id="tournament-count">-</span></p>
+        <button class="btn btn-outline-primary btn-sm" onclick="loadTournaments()">Manage Tournaments</button>
       </div>
     </div>
   </div>
+
+  <div id="admin-content"></div>
 </div>
+
+<script>
+async function loadUsers() {
+  try {
+    const users = await API.users.getAll();
+    const content = document.getElementById('admin-content');
+    content.innerHTML = `
+      <div class="card-soft p-4">
+        <h5 class="mb-3"><i class="bi bi-people"></i> Users (${users.length})</h5>
+        <div class="table-responsive">
+          <table class="table table-dark table-hover">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Rating</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${users.map(user => `
+                <tr>
+                  <td>${user.id}</td>
+                  <td>${user.username}</td>
+                  <td>${user.email}</td>
+                  <td><span class="badge bg-${user.role === 'admin' ? 'danger' : 'primary'}">${user.role}</span></td>
+                  <td>${user.rating || 'N/A'}</td>
+                  <td>
+                    <button class="btn btn-sm btn-outline-warning" onclick="editUser(${user.id})">Edit</button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteUser(${user.id})">Delete</button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    document.getElementById('user-count').textContent = users.length;
+  } catch (error) {
+    showError('Failed to load users: ' + error.message);
+  }
+}
+
+async function loadTournaments() {
+  try {
+    const tournaments = await API.tournaments.getAll();
+    const content = document.getElementById('admin-content');
+    content.innerHTML = `
+      <div class="card-soft p-4">
+        <h5 class="mb-3"><i class="bi bi-trophy"></i> Tournaments (${tournaments.length})</h5>
+        <div class="table-responsive">
+          <table class="table table-dark table-hover">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Location</th>
+                <th>Start Date</th>
+                <th>Prize Pool</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tournaments.map(t => `
+                <tr>
+                  <td>${t.id}</td>
+                  <td>${t.name}</td>
+                  <td>${t.location || 'N/A'}</td>
+                  <td>${t.start_date || 'N/A'}</td>
+                  <td>$${parseFloat(t.prize_pool || 0).toFixed(2)}</td>
+                  <td>
+                    <button class="btn btn-sm btn-outline-warning" onclick="editTournament(${t.id})">Edit</button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteTournament(${t.id})">Delete</button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    document.getElementById('tournament-count').textContent = tournaments.length;
+  } catch (error) {
+    showError('Failed to load tournaments: ' + error.message);
+  }
+}
+
+async function deleteUser(id) {
+  if (!confirm('Are you sure you want to delete this user?')) return;
+  try {
+    await API.users.delete(id);
+    loadUsers();
+  } catch (error) {
+    showError('Failed to delete user: ' + error.message);
+  }
+}
+
+async function deleteTournament(id) {
+  if (!confirm('Are you sure you want to delete this tournament?')) return;
+  try {
+    await API.tournaments.delete(id);
+    loadTournaments();
+  } catch (error) {
+    showError('Failed to delete tournament: ' + error.message);
+  }
+}
+
+function showError(message) {
+  const errorDiv = document.getElementById('admin-error');
+  errorDiv.textContent = message;
+  errorDiv.style.display = 'block';
+  setTimeout(() => errorDiv.style.display = 'none', 5000);
+}
+
+// Load initial stats
+(async function() {
+  try {
+    const user = await API.auth.getCurrentUser();
+    if (!user || user.role !== 'admin') {
+      window.location.hash = '#/dashboard';
+      return;
+    }
+    
+    const users = await API.users.getAll();
+    const tournaments = await API.tournaments.getAll();
+    document.getElementById('user-count').textContent = users.length;
+    document.getElementById('tournament-count').textContent = tournaments.length;
+  } catch (error) {
+    showError('Failed to load admin data: ' + error.message);
+  }
+})();
+</script>

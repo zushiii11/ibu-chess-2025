@@ -2,9 +2,10 @@
   <div class="shine"></div>
   <div class="row align-items-center g-4">
     <div class="col-lg-7">
-      <div class="icon-chip mb-2"><i class="bi bi-lightning-charge"></i> Milestone 1 — Static SPA</div>
-      <h1 class="display-6 fw-semibold mb-2">Play smarter with <span class="text-primary">IBU Chess</span></h1>
-      <p class="text-secondary">A sleek, mobile‑friendly chess hub. Today it’s static; by Milestones 3–5 it becomes a full JWT‑secured, documented, and deployed app.</p>
+      <div class="icon-chip mb-2"><i class="bi bi-lightning-charge"></i> Milestone 4 — Authenticated</div>
+      <h1 class="display-6 fw-semibold mb-2">Welcome back, <span class="text-primary"
+          id="dashboard-username">Player</span>!</h1>
+      <p class="text-secondary">Your personalized chess dashboard. Track your games, tournaments, and ratings.</p>
       <div class="d-flex gap-2 mt-3">
         <a href="#/games" class="btn btn-primary glow"><i class="bi bi-controller"></i> Browse Games</a>
         <a href="#/tournaments" class="btn btn-outline-light"><i class="bi bi-trophy"></i> Explore Tournaments</a>
@@ -16,13 +17,52 @@
   </div>
 </section>
 
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <h3 class="h5 mb-3"><i class="bi bi-joystick"></i> Quick Play</h3>
+  </div>
+  <div class="col-md-4">
+    <a href="#/play/ai" class="text-decoration-none">
+      <div class="game-mode-card" style="padding: 1.5rem;">
+        <div class="icon text-primary" style="font-size: 2.5rem; margin-bottom: 0.5rem;">
+          <i class="bi bi-cpu"></i>
+        </div>
+        <h4 class="h6 mb-1 fw-semibold">Play vs AI</h4>
+        <p class="text-secondary small mb-0">Challenge the computer</p>
+      </div>
+    </a>
+  </div>
+  <div class="col-md-4">
+    <a href="#/play/human" class="text-decoration-none">
+      <div class="game-mode-card" style="padding: 1.5rem;">
+        <div class="icon text-info" style="font-size: 2.5rem; margin-bottom: 0.5rem;">
+          <i class="bi bi-people"></i>
+        </div>
+        <h4 class="h6 mb-1 fw-semibold">Quick Match</h4>
+        <p class="text-secondary small mb-0">Find an opponent</p>
+      </div>
+    </a>
+  </div>
+  <div class="col-md-4">
+    <a href="#/challenge" class="text-decoration-none">
+      <div class="game-mode-card" style="padding: 1.5rem;">
+        <div class="icon text-warning" style="font-size: 2.5rem; margin-bottom: 0.5rem;">
+          <i class="bi bi-trophy"></i>
+        </div>
+        <h4 class="h6 mb-1 fw-semibold">Challenge</h4>
+        <p class="text-secondary small mb-0">Challenge a player</p>
+      </div>
+    </a>
+  </div>
+</div>
+
 <div class="row g-3">
   <div class="col-md-4">
     <div class="stat">
       <div class="d-flex align-items-center justify-content-between">
         <div>
-          <div class="text-secondary small">Your Blitz</div>
-          <div class="fs-3 fw-semibold">1500</div>
+          <div class="text-secondary small">Your Rating</div>
+          <div class="fs-3 fw-semibold" id="dashboard-rating">-</div>
         </div>
         <i class="bi bi-speedometer2 fs-2 text-primary"></i>
       </div>
@@ -33,7 +73,7 @@
       <div class="d-flex align-items-center justify-content-between">
         <div>
           <div class="text-secondary small">Recent Games</div>
-          <div class="fs-3 fw-semibold">24</div>
+          <div class="fs-3 fw-semibold" id="dashboard-games">-</div>
         </div>
         <i class="bi bi-collection-play fs-2 text-primary"></i>
       </div>
@@ -44,10 +84,42 @@
       <div class="d-flex align-items-center justify-content-between">
         <div>
           <div class="text-secondary small">Tournaments</div>
-          <div class="fs-3 fw-semibold">3</div>
+          <div class="fs-3 fw-semibold" id="dashboard-tournaments">-</div>
         </div>
         <i class="bi bi-trophy fs-2 text-primary"></i>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+  (async function () {
+    try {
+      const user = await API.auth.getCurrentUser();
+      if (user) {
+        document.getElementById('dashboard-username').textContent = user.username;
+        document.getElementById('dashboard-rating').textContent = user.rating || 'N/A';
+
+        // Load user's games
+        try {
+          const games = await API.games.getAll({ white_player_id: user.id, limit: 10 });
+          const blackGames = await API.games.getAll({ black_player_id: user.id, limit: 10 });
+          const totalGames = games.length + blackGames.length;
+          document.getElementById('dashboard-games').textContent = totalGames;
+        } catch (e) {
+          document.getElementById('dashboard-games').textContent = '0';
+        }
+
+        // Load user's tournaments
+        try {
+          const participants = await API.participants.getAll({ user_id: user.id });
+          document.getElementById('dashboard-tournaments').textContent = participants.length;
+        } catch (e) {
+          document.getElementById('dashboard-tournaments').textContent = '0';
+        }
+      }
+    } catch (error) {
+      console.error('Error loading dashboard:', error);
+    }
+  })();
+</script>
